@@ -1,3 +1,13 @@
+---
+title: LEAF AI - Tea Leaf Disease Detection
+emoji: 🌱
+colorFrom: green
+colorTo: emerald
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # LEAF_AI — Tea & Plant Leaf Disease Detection System
 
 An enterprise-ready, full-stack AI web application designed for agricultural diagnosis, foliar pathogen detection, and agronomic management using deep learning computer vision.
