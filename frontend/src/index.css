@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #15803D;
+    --color-primary-hover: #166534;
+    --color-primary-light: #F0FDF4;
+    --color-secondary: #059669;
+    --color-accent: #D97706;
+    --color-background: #F8FAF9;
+    --color-foreground: #0F172A;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #0F172A;
+    --color-muted: #F1F5F3;
+    --color-muted-foreground: #475569;
+    --color-border: #E2EFE7;
+    --color-border-subtle: rgba(15, 23, 42, 0.06);
+    --color-destructive: #DC2626;
+    --color-ring: #15803D;
+
+    --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+    --shadow-xl: 0 20px 32px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.04);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--color-background);
+    background-image: linear-gradient(rgba(248, 250, 249, 0.72), rgba(248, 250, 249, 0.78)), url('/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Background Canvas Utilities */
+.app-canvas {
+  background: transparent;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Modern SaaS Card System - Frosted Glass Effect */
+.clean-card {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 239, 231, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clean-card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.clean-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(21, 128, 61, 0.3);
+  box-shadow: var(--shadow-md);
+}
+
+/* Primary Button - Deep Forest Green */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 20px;
+  box-shadow: 0 2px 8px -1px rgba(21, 128, 61, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px rgba(21, 128, 61, 0.45);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary Button - Refined Natural Border */
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #1E293B;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #F8FAF9;
+  border-color: rgba(21, 128, 61, 0.35);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Accent Button - Warm Amber */
+.btn-accent {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 20px;
+  border: none;
+  box-shadow: 0 2px 8px -1px rgba(217, 119, 6, 0.35);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-accent:hover:not(:disabled) {
+  background-color: #B45309;
+  transform: translateY(-1px);
+}
+
+/* Custom Clean Input */
+.input-clean {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 11px 16px;
+  color: #0F172A;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input-clean:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+}
+
+.input-clean::placeholder {
+  color: #94A3B8;
+}
+
+/* Subtle Forest Gradient Text */
+.text-gradient {
+  background: linear-gradient(135deg, #15803D 0%, #047857 70%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Smooth Page In Transition */
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-slide-in {
+  animation: pageFadeIn 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-slide-in {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Clean Professional Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(21, 128, 61, 0.4);
+}

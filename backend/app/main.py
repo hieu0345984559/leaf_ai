@@ -1,0 +1,129 @@
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from app.core.config import settings
+from app.db.init_db import init_database
+from app.services.model_service import model_service
+from app.api.routes import auth, predict, history, diseases, dashboard
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("leaf_ai")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing LEAF_AI backend...")
+    
+    # 1. Initialize SQLite database & tables & initial disease data
+    try:
+        init_database()
+        logger.info("Database initialized successfully.")
+    except Exception as e:
+        logger.error(f"Database initialization failure: {e}", exc_info=True)
+        
+    # 2. Preload YOLO Model
+    try:
+        model_service.load_model()
+        logger.info(f"AI Model ready. Classes: {model_service.class_names}")
+    except Exception as e:
+        logger.error(f"AI Model failed to load at startup: {e}. Model predictions will report error until resolved.")
+        
+    yield
+    
+    logger.info("LEAF_AI backend shut down cleanly.")
+
+app = FastAPI(
+    title="LEAF_AI — Tea Plant (Camellia sinensis) Foliar Disease Detection API",
+    description="Real full-stack tea leaf disease detection and complete treatment management using YOLO deep learning.",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# CORS
+origins = [
+    settings.FRONTEND_ORIGIN,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Health endpoint
+@app.get("/api/health", tags=["Health"])
+def health_check():
+    return {
+        "status": "healthy",
+        "model_loaded": model_service.is_loaded,
+        "model_classes": list(model_service.class_names.values()) if model_service.is_loaded else [],
+        "version": "1.0.0"
+    }
+
+# Secure image serving endpoint
+@app.get("/api/images/{folder}/{filename}", tags=["Media"])
+def get_image(folder: str, filename: str):
+    """Safely stream stored images with path traversal defenses."""
+    if folder not in ("originals", "results"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image folder specified."
+        )
+        
+    # Guard against traversal
+    safe_name = Path(filename).name
+    if safe_name != filename or ".." in filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Malformed file path."
+        )
+        
+    target_path = (settings.storage_dir / folder / safe_name).resolve()
+    if not target_path.exists() or not target_path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Requested image could not be located."
+        )
+        
+    # Ensure file is inside allowed directory
+    if settings.storage_dir not in target_path.parents:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden."
+        )
+        
+    return FileResponse(str(target_path))
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(predict.router)
+app.include_router(history.router)
+app.include_router(diseases.router)
+app.include_router(dashboard.router)
+
+# Mount frontend dist static files for seamless standalone execution
+frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+    app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="static_assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        file_path = frontend_dist / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(frontend_dist / "index.html"))
+
