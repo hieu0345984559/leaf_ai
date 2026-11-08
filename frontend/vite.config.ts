@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: process.env.NODE_ENV === 'production' ? '/leaf_ai/' : '/',
   build: {
     chunkSizeWarningLimit: 1500,
     rollupOptions: {

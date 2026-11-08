@@ -11,7 +11,7 @@ import { HistoryPage } from './pages/HistoryPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <ToastContainer />
         <Routes>
