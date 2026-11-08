@@ -133,7 +133,9 @@ def run_prediction(image_path: str, user_id: int, db: Session) -> DiagnosisHisto
     results = model_service.predict(str(orig_dest))
     inference_time = time.time() - start_time
     
-    detections: list[dict] = []
+    healthy_boxes: list[dict] = []
+    disease_boxes: list[dict] = []
+    
     if results and len(results) > 0:
         res = results[0]
         if res.boxes is not None and len(res.boxes) > 0:
@@ -144,21 +146,37 @@ def run_prediction(image_path: str, user_id: int, db: Session) -> DiagnosisHisto
                 conf = float(box.conf[0].cpu().numpy())
                 cls_idx = int(box.cls[0].cpu().numpy())
                 
-                class_name = model_service.class_names.get(cls_idx, f"Class_{cls_idx}")
+                raw_class_name = model_service.class_names.get(cls_idx, f"Class_{cls_idx}")
                 
-                # Apply per-class confidence threshold filtering
+                # Kiểm tra nếu đây là nhãn Healthy từ model
+                is_healthy_cls = raw_class_name.strip().lower() == "healthy" or cls_idx == 3
+                
+                if is_healthy_cls:
+                    healthy_threshold = settings.CLASS_CONFIDENCE_THRESHOLDS.get("Healthy", 0.35)
+                    if conf >= healthy_threshold:
+                        healthy_boxes.append({
+                            "class_name": "Healthy",
+                            "confidence": round(conf, 4),
+                            "x1": round(xyxy[0], 2),
+                            "y1": round(xyxy[1], 2),
+                            "x2": round(xyxy[2], 2),
+                            "y2": round(xyxy[3], 2)
+                        })
+                    continue
+                
+                # Phân loại và lọc ngưỡng đối với nhãn bệnh hại
+                final_label = map_disease_label(raw_class_name)
                 class_threshold = settings.CLASS_CONFIDENCE_THRESHOLDS.get(
-                    class_name,
+                    raw_class_name,
                     settings.CLASS_CONFIDENCE_THRESHOLDS.get(
-                        map_disease_label(class_name),
+                        final_label,
                         settings.DEFAULT_CLASS_CONFIDENCE
                     )
                 )
                 if conf < class_threshold:
-                    continue  # Skip detection below its class-specific threshold
+                    continue  # Bỏ qua ứng viên dưới ngưỡng độ tin cậy của phân lớp
                 
-                final_label = map_disease_label(class_name)
-                detections.append({
+                disease_boxes.append({
                     "class_name": final_label,
                     "confidence": round(conf, 4),
                     "x1": round(xyxy[0], 2),
@@ -167,8 +185,33 @@ def run_prediction(image_path: str, user_id: int, db: Session) -> DiagnosisHisto
                     "y2": round(xyxy[3], 2)
                 })
                 
-    # Determine status according to actual model predictions
-    status = "detected" if len(detections) > 0 else "no_detection"
+    # Đánh giá Healthy vs Bệnh hại:
+    # Nếu bệnh không quá rõ ràng (unclear / faint) hoặc nhãn Healthy chiếm ưu thế
+    max_healthy_conf = max((b["confidence"] for b in healthy_boxes), default=0.0)
+    max_disease_conf = max((b["confidence"] for b in disease_boxes), default=0.0)
+    
+    is_leaf_healthy = False
+    unclear_disease = False
+    
+    if len(disease_boxes) == 0:
+        is_leaf_healthy = True
+    elif max_healthy_conf > 0:
+        # Khi model đồng thời nhận diện vùng lá Healthy:
+        # 1. Độ tin cậy Healthy cao hơn hoặc bằng độ tin cậy bệnh hại
+        # 2. Hoặc Healthy >= 0.50 trong khi bệnh hại còn mờ nhạt (< 0.45)
+        if max_healthy_conf >= max_disease_conf or (max_healthy_conf >= 0.50 and max_disease_conf < 0.45):
+            is_leaf_healthy = True
+            unclear_disease = True
+            logger.info(
+                f"Suppressed unclear disease ({max_disease_conf:.2f}) in favor of Healthy ({max_healthy_conf:.2f})"
+            )
+            
+    if is_leaf_healthy:
+        status = "no_detection"
+        detections = []
+    else:
+        status = "detected"
+        detections = disease_boxes
     
     # Generate annotated image
     result_rel_path = None
@@ -205,4 +248,9 @@ def run_prediction(image_path: str, user_id: int, db: Session) -> DiagnosisHisto
         
     db.commit()
     db.refresh(diagnosis)
+    
+    # Gắn metadata bổ sung phục vụ response
+    setattr(diagnosis, "healthy_confidence", round(max_healthy_conf, 4) if max_healthy_conf > 0 else None)
+    setattr(diagnosis, "unclear_disease_suppressed", unclear_disease)
+    
     return diagnosis

@@ -23,39 +23,38 @@ class Settings(BaseSettings):
         "Rầy xanh hại chè":                                              0.25,
         "Lá chè bị rầy xanh gây hại (Tea green leafhopper infested leaf)": 0.25,
         "Lá chè bị rầy xanh gây hại":                                    0.25,
-        "Lá chè (Tea leaf)":                                            0.25,
-        "Tea leaf":                                                     0.65,
+        "Tea green leafhopper":                                          0.25,
         "Bacterial Leaf and Shoot Blight":                              0.25,
-        "Healthy":                                                      0.50,
+        "Healthy":                                                      0.35,
 
         # 2. Thối đen lá chè (Black rot of tea)
-        "Thối đen lá chè (Black rot of tea)":                           0.08,
-        "Black rot of tea":                                             0.08,
-        "Gray Blight":                                                  0.18,
-        "Grey Blight":                                                  0.18,
+        "Thối đen lá chè (Black rot of tea)":                           0.25,
+        "Black rot of tea":                                             0.25,
+        "Gray Blight":                                                  0.25,
+        "Grey Blight":                                                  0.25,
 
         # 3. Cháy nâu lá chè (Brown blight of tea)
-        "Cháy nâu lá chè (Brown blight of tea)":                        0.08,
-        "Brown blight of tea":                                          0.08,
-        "Brown Blight":                                                 0.18,
+        "Cháy nâu lá chè (Brown blight of tea)":                        0.25,
+        "Brown blight of tea":                                          0.25,
+        "Brown Blight":                                                 0.25,
 
         # 4. Gỉ sắt lá chè (Leaf rust of tea)
-        "Gỉ sắt lá chè (Leaf rust of tea)":                             0.45,
-        "Leaf rust of tea":                                             0.45,
-        "White spot of tea":                                            0.08,
+        "Gỉ sắt lá chè (Leaf rust of tea)":                             0.30,
+        "Leaf rust of tea":                                             0.30,
+        "White spot of tea":                                            0.25,
         "White Scab":                                                   0.25,
 
         # 5. Lá chè bị nhện đỏ gây hại (Red spider mite infested tea leaf)
-        "Lá chè bị nhện đỏ gây hại (Red spider mite infested tea leaf)":0.35,
-        "Red Spider infested tea leaf":                                 0.35,
-        "Red Leaf Spot":                                                0.20,
+        "Lá chè bị nhện đỏ gây hại (Red spider mite infested tea leaf)":0.30,
+        "Red Spider infested tea leaf":                                 0.30,
+        "Red Leaf Spot":                                                0.25,
         "Blister Blight":                                               0.25,
 
         # 6. Lá chè bị bọ xít muỗi gây hại (Tea mosquito bug infested leaf)
-        "Lá chè bị bọ xít muỗi gây hại (Tea mosquito bug infested leaf)":0.60,
-        "Tea Mosquito bug infested leaf":                               0.60,
-        "Helopeltis":                                                   0.25,
-        "Algal Leaf Spot":                                              0.18,
+        "Lá chè bị bọ xít muỗi gây hại (Tea mosquito bug infested leaf)":0.35,
+        "Tea Mosquito bug infested leaf":                               0.35,
+        "Helopeltis":                                                   0.30,
+        "Algal Leaf Spot":                                              0.25,
 
         # Nhãn phụ
         "disease":                                                      0.25,
@@ -145,9 +144,13 @@ LABEL_MAPPING: dict[str, str] = {
     "Lá chè bị rầy xanh gây hại": "Bệnh rầy xanh (Tea green leafhopper)",
     "Tea green leafhopper": "Bệnh rầy xanh (Tea green leafhopper)",
     "Bacterial Leaf and Shoot Blight": "Bệnh rầy xanh (Tea green leafhopper)",
-    "Tea leaf": "Bệnh rầy xanh (Tea green leafhopper)",
-    "Lá chè (Tea leaf)": "Bệnh rầy xanh (Tea green leafhopper)",
-    "Healthy": "Bệnh rầy xanh (Tea green leafhopper)",
+
+    # Healthy / Lá khỏe mạnh (không phải bệnh hại)
+    "Healthy": "Healthy",
+    "healthy": "Healthy",
+    "Khỏe mạnh": "Healthy",
+    "Lá khỏe mạnh": "Healthy",
+    "Lá chè khỏe mạnh": "Healthy",
 
     # 2. Grey Blight / Gray Blight -> Thối đen lá chè (Black rot of tea)
     "Grey Blight": "Thối đen lá chè (Black rot of tea)",

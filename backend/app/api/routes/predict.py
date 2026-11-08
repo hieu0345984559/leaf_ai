@@ -62,7 +62,16 @@ async def predict(
     
     # Formulate friendly diagnosis summary
     if len(detection_items) == 0:
-        summary = "Không phát hiện dấu hiệu bệnh hại trên lá ở ngưỡng độ tin cậy hiện tại. Lá chè khỏe mạnh."
+        healthy_conf = getattr(diagnosis, "healthy_confidence", None)
+        unclear_suppressed = getattr(diagnosis, "unclear_disease_suppressed", False)
+        
+        if healthy_conf and healthy_conf > 0:
+            if unclear_suppressed:
+                summary = f"Mô hình xác nhận lá chè khỏe mạnh với độ tin cậy {healthy_conf*100:.1f}%. Các triệu chứng nghi ngờ mờ nhạt hoặc không đủ rõ ràng để xác nhận bệnh hại."
+            else:
+                summary = f"Mô hình xác nhận lá chè khỏe mạnh (Healthy) với độ tin cậy {healthy_conf*100:.1f}%. Không phát hiện dấu hiệu bệnh hại."
+        else:
+            summary = "Không phát hiện dấu hiệu bệnh hại trên lá ở ngưỡng độ tin cậy hiện tại. Lá chè khỏe mạnh."
     else:
         top_det = max(detection_items, key=lambda x: x.confidence)
         cls_clean = map_disease_label(top_det.class_name).replace("Tomato___", "").replace("_", " ")

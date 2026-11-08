@@ -197,3 +197,33 @@ def test_predict_validation_and_inference(client):
     # 8. Verify record is now 404
     get_after_del = client.get(f"/api/history/{history_id}", headers=headers)
     assert get_after_del.status_code == 404
+
+def test_predict_healthy_leaf(client):
+    email = "healthy_test@leafai.dev"
+    pw = "Password123!"
+    db = SessionLocal()
+    u = db.query(User).filter(User.email == email).first()
+    if u:
+        db.delete(u)
+        db.commit()
+    db.close()
+    
+    res = client.post("/api/auth/register", json={
+        "email": email,
+        "password": pw,
+        "password_confirmation": pw
+    })
+    token = res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    sample_healthy = "backend/app/storage/originals/334e1f8bccb3_orig.jpg"
+    with open(sample_healthy, "rb") as f:
+        file_bytes = f.read()
+        
+    files = {"file": ("healthy_leaf.jpg", BytesIO(file_bytes), "image/jpeg")}
+    pred_res = client.post("/api/predict", headers=headers, files=files)
+    assert pred_res.status_code == 200
+    pred_data = pred_res.json()
+    assert pred_data["status"] == "no_detection"
+    assert len(pred_data["detections"]) == 0
+    assert "khỏe mạnh" in pred_data["summary"].lower()
