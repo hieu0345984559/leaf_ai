@@ -8,7 +8,5 @@ services:
     envVars:
       - key: APP_ENV
         value: production
-      - key: PORT
-        value: 7860
       - key: FRONTEND_ORIGIN
         value: https://hieu0345984559.github.io

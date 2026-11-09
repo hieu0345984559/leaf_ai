@@ -16,7 +16,7 @@ WORKDIR /app
 
 # Install system libraries needed by OpenCV / Pillow
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -41,6 +41,7 @@ ENV PYTHONPATH=/app/backend
 ENV PORT=7860
 
 EXPOSE 7860
+EXPOSE 10000
 
 WORKDIR /app/backend
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
