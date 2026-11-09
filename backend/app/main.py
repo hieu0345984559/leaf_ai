@@ -120,7 +120,16 @@ app.include_router(dashboard.router)
 # Mount frontend dist static files for seamless standalone execution
 frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 if frontend_dist.exists() and (frontend_dist / "index.html").exists():
-    app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="static_assets")
+    if (frontend_dist / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="static_assets")
+        app.mount("/leaf_ai/assets", StaticFiles(directory=str(frontend_dist / "assets")), name="static_assets_leaf_ai")
+
+    @app.get("/leaf_ai/{full_path:path}")
+    async def serve_leaf_ai_subpath(full_path: str):
+        file_path = frontend_dist / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(frontend_dist / "index.html"))
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
